@@ -1,5 +1,18 @@
-// ココモのステップ（100 → 100 → 200 → 300 → 500 → 800）
-const KOKOMO_STEPS = [100, 100, 200, 300, 500, 800];
+// 初期ユニット候補
+const UNIT_LIST = [100, 200, 300, 400, 500];
+let baseUnit = 100;
+
+// ココモステップ生成
+function getKokomoSteps() {
+  return [
+    baseUnit,
+    baseUnit,
+    baseUnit * 2,
+    Math.round(baseUnit * 3),
+    Math.round(baseUnit * 5),
+    Math.round(baseUnit * 8)
+  ];
+}
 
 // 会場ごとの状態
 let state = {
@@ -10,30 +23,89 @@ let state = {
   }
 };
 
+let lastBetAmount = null;
+
 // ステータス表示
 function renderStatus() {
   const v = state.venues[state.currentVenue];
+  const steps = getKokomoSteps();
   const el = document.getElementById('status');
 
-  let text = `
+  el.innerHTML = `
     会場: ${state.currentVenue === 'tokyo' ? '東京' : '京都'}<br>
-    ステップ: ${v.stepIndex + 1} / ${KOKOMO_STEPS.length}<br>
-    次の賭け金: ${KOKOMO_STEPS[v.stepIndex]} 円<br>
+    ステップ: ${v.stepIndex + 1} / ${steps.length}<br>
+    次の賭け金: ${steps[v.stepIndex]} 円<br>
     連敗数: ${v.loseCount}<br>
     状態: ${v.finished ? '本日終了（勝ち逃げ or 損切り）' : '運用中'}
   `;
 
-  el.innerHTML = text;
+  renderBetButtons();
 }
 
-// 会場切り替え
-document.querySelectorAll('.venue-btn').forEach(btn => {
+// 初期ユニットボタン
+function renderUnitButtons() {
+  const container = document.getElementById('unitButtons');
+  container.innerHTML = "";
+
+  UNIT_LIST.forEach(unit => {
+    const btn = document.createElement('button');
+    btn.textContent = `${unit}円スタート`;
+    btn.className = "unit-btn";
+
+    btn.addEventListener('click', () => {
+      baseUnit = unit;
+      alert(`初期ユニットを ${unit}円 に設定しました`);
+      renderStatus();
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+// レース番号自動生成
+function renderRaceButtons() {
+  const container = document.getElementById('raceButtons');
+  container.innerHTML = "";
+
+  for (let i = 1; i <= 12; i++) {
+    const btn = document.createElement('button');
+    btn.textContent = `${i}R`;
+    btn.className = "race-btn";
+
+    btn.addEventListener('click', () => {
+      document.getElementById('raceNo').value = i;
+    });
+
+    container.appendChild(btn);
+  }
+}
+
+// オッズ候補ボタン
+document.querySelectorAll('.odds-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    state.currentVenue = btn.dataset.venue;
-    document.getElementById('buyBtn').style.display = 'none';
-    renderStatus();
+    document.getElementById('odds').value = btn.dataset.odds;
   });
 });
+
+// 賭け金候補（ユニット連動）
+function renderBetButtons() {
+  const container = document.getElementById('betButtons');
+  container.innerHTML = "";
+
+  const steps = getKokomoSteps();
+
+  steps.forEach(amount => {
+    const btn = document.createElement('button');
+    btn.textContent = `${amount}円`;
+    btn.className = "bet-btn";
+
+    btn.addEventListener('click', () => {
+      document.getElementById('manualBet').value = amount;
+    });
+
+    container.appendChild(btn);
+  });
+}
 
 // 条件判定
 document.getElementById('checkBtn').addEventListener('click', () => {
@@ -50,7 +122,7 @@ document.getElementById('checkBtn').addEventListener('click', () => {
   }
 
   if (v.finished) {
-    judgeEl.textContent = 'この会場は本日終了状態です（勝ち逃げ or 損切り）。';
+    judgeEl.textContent = 'この会場は本日終了状態です。';
     return;
   }
 
@@ -59,15 +131,33 @@ document.getElementById('checkBtn').addEventListener('click', () => {
     return;
   }
 
+  const steps = getKokomoSteps();
+  const bet = steps[v.stepIndex];
+
   judgeEl.innerHTML = `
     ✅ 条件OK！<br>
     レース: ${raceNo}R<br>
     2番人気オッズ: ${odds}倍<br>
-    賭け金: ${KOKOMO_STEPS[v.stepIndex]} 円
+    賭け金: ${bet} 円
   `;
 
-  // 購入ボタン表示
+  lastBetAmount = bet;
   document.getElementById('buyBtn').style.display = 'block';
+});
+
+// 賭け金コピー
+document.getElementById('copyBetBtn').addEventListener('click', async () => {
+  if (!lastBetAmount) {
+    alert('まず条件判定をしてください。');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(String(lastBetAmount));
+    alert(`賭け金 ${lastBetAmount}円 をコピーしました。`);
+  } catch (e) {
+    alert('コピーに失敗しました。');
+  }
 });
 
 // 購入ボタン
@@ -75,58 +165,48 @@ document.getElementById('buyBtn').addEventListener('click', () => {
   window.open("https://www.ipat.jra.go.jp/", "_blank");
 });
 
-// 的中処理
+// 的中
 document.getElementById('winBtn').addEventListener('click', () => {
   const v = state.venues[state.currentVenue];
-
-  if (v.finished) {
-    document.getElementById('judge').textContent = 'この会場はすでに本日終了しています。';
-    return;
-  }
-
   v.finished = true;
   v.loseCount = 0;
   v.stepIndex = 0;
 
   document.getElementById('judge').textContent =
-    '🎉 的中！この会場は本日勝ち逃げ終了です。';
+    '🎉 的中！この会場は本日終了です。';
 
   document.getElementById('buyBtn').style.display = 'none';
   renderStatus();
 });
 
-// ハズレ処理
+// ハズレ
 document.getElementById('loseBtn').addEventListener('click', () => {
   const v = state.venues[state.currentVenue];
-
-  if (v.finished) {
-    document.getElementById('judge').textContent = 'この会場はすでに本日終了しています。';
-    return;
-  }
+  const steps = getKokomoSteps();
 
   v.loseCount++;
 
   if (v.loseCount >= 6) {
     v.finished = true;
     document.getElementById('judge').textContent =
-      '❌ 6連敗に到達。損切りでこの会場は本日終了です。';
-    document.getElementById('buyBtn').style.display = 'none';
+      '❌ 6連敗 → 損切りで本日終了';
     renderStatus();
     return;
   }
 
-  if (v.stepIndex < KOKOMO_STEPS.length - 1) {
+  if (v.stepIndex < steps.length - 1) {
     v.stepIndex++;
   }
 
   document.getElementById('judge').textContent =
-    `ハズレ。連敗数: ${v.loseCount} → 次の賭け金: ${KOKOMO_STEPS[v.stepIndex]} 円`;
+    `ハズレ → 次の賭け金: ${steps[v.stepIndex]}円`;
 
-  document.getElementById('buyBtn').style.display = 'none';
   renderStatus();
 });
 
 // 初期表示
 window.addEventListener('load', () => {
+  renderUnitButtons();
+  renderRaceButtons();
   renderStatus();
 });
