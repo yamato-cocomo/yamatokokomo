@@ -509,13 +509,10 @@
     }
 
     // ===== 購入ボタン =====
-    purchaseButton.addEventListener("click", () => {purchaseButton.addEventListener("click", () => {
-  window.open("https://www.ipat.jra.go.jp/", "_blank");
+purchaseButton.addEventListener("click", () => {
+  window.location.href = "https://www.ipat.jra.go.jp/";
 });
 
-      const amount = state.selectedBet || state.unit * state.step;
-      alert(`購入金額：${amount}円\nレース：${state.selectedRace || "-"}R\nオッズ：${state.odds || "-"}\n（ここでIPATにコピペ）`);
-    });
 
     // ===== 初期化 =====
     function init() {
