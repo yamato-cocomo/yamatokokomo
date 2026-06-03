@@ -67,3 +67,7 @@ document.getElementById('checkBtn').addEventListener('click', () => {
     賭け金: ${KOKOMO_STEPS[v.stepIndex]} 円
   `;
 });
+// 購入ボタン
+document.getElementById('buyBtn').addEventListener('click', () => {
+  window.open("https://www.ipat.jra.go.jp/", "_blank");
+});
