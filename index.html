@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>2ndフェイバリット・ココモ運用</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>2ndフェイバリット・ココモ運用パネル</h1>
+
+  <!-- 会場選択 -->
+  <section>
+    <h2>会場</h2>
+    <button class="venue-btn" data-venue="tokyo">東京</button>
+    <button class="venue-btn" data-venue="kyoto">京都</button>
+  </section>
+
+  <!-- 現在ステータス表示 -->
+  <section>
+    <h2>現在のステータス</h2>
+    <div id="status"></div>
+  </section>
+
+  <!-- レース情報入力（最初は手入力でOK） -->
+  <section>
+    <h2>レース情報</h2>
+    <label>
+      レース番号:
+      <input type="number" id="raceNo" min="1" max="12">
+    </label>
+    <br>
+    <label>
+      2番人気オッズ:
+      <input type="number" id="odds" step="0.1">
+    </label>
+    <br>
+    <button id="checkBtn">条件判定</button>
+  </section>
+
+  <!-- 判定結果 -->
+  <section>
+    <h2>判定結果</h2>
+    <div id="judge"></div>
+  </section>
+
+  <!-- レース結果入力 -->
+  <section>
+    <h2>レース結果</h2>
+    <button id="winBtn">的中</button>
+    <button id="loseBtn">ハズレ</button>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
