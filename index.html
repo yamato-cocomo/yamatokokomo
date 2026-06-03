@@ -10,6 +10,9 @@
     section { margin-bottom: 25px; }
     #buyBtn { background: #28a745; color: white; border: none; border-radius: 6px; }
     .venue-btn { background: #007bff; color: white; border: none; border-radius: 6px; }
+    .unit-btn, .race-btn, .odds-btn, .bet-btn {
+      background: #444; color: white; border: none; border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -23,20 +26,27 @@
     <button class="venue-btn" data-venue="kyoto">京都</button>
   </section>
 
-  <!-- 現在ステータス表示 -->
+  <!-- 初期ユニット選択 -->
+  <section>
+    <h3>初期ユニット（賭け金）</h3>
+    <div id="unitButtons"></div>
+  </section>
+
+  <!-- ステータス -->
   <section>
     <h2>現在のステータス</h2>
     <div id="status"></div>
   </section>
 
-  <!-- レース情報入力 -->
+  <!-- レース番号 -->
+  <section>
+    <h3>レース番号</h3>
+    <div id="raceButtons"></div>
+  </section>
+
+  <!-- オッズ入力 -->
   <section>
     <h2>レース情報</h2>
-    <label>
-      レース番号:
-      <input type="number" id="raceNo" min="1" max="12">
-    </label>
-    <br>
     <label>
       2番人気オッズ:
       <input type="number" id="odds" step="0.1">
@@ -45,10 +55,26 @@
     <button id="checkBtn">条件判定</button>
   </section>
 
+  <!-- オッズ候補 -->
+  <section>
+    <h3>オッズ候補</h3>
+    <div id="oddsButtons">
+      <button class="odds-btn" data-odds="2.7">2.7</button>
+      <button class="odds-btn" data-odds="2.8">2.8</button>
+      <button class="odds-btn" data-odds="2.9">2.9</button>
+      <button class="odds-btn" data-odds="3.0">3.0</button>
+      <button class="odds-btn" data-odds="3.1">3.1</button>
+      <button class="odds-btn" data-odds="3.2">3.2</button>
+      <button class="odds-btn" data-odds="3.3">3.3</button>
+      <button class="odds-btn" data-odds="3.4">3.4</button>
+    </div>
+  </section>
+
   <!-- 判定結果 -->
   <section>
     <h2>判定結果</h2>
     <div id="judge"></div>
+    <button id="copyBetBtn">賭け金をコピー</button>
   </section>
 
   <!-- 購入ボタン -->
@@ -56,7 +82,7 @@
     <button id="buyBtn" style="display:none;">購入へ</button>
   </section>
 
-  <!-- レース結果入力 -->
+  <!-- レース結果 -->
   <section>
     <h2>レース結果</h2>
     <button id="winBtn">的中</button>
