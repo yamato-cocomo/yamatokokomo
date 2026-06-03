@@ -38,3 +38,32 @@ document.querySelectorAll('.venue-btn').forEach(btn => {
 window.addEventListener('load', () => {
   renderStatus();
 });
+// 条件判定
+document.getElementById('checkBtn').addEventListener('click', () => {
+  const raceNo = Number(document.getElementById('raceNo').value);
+  const odds = Number(document.getElementById('odds').value);
+  const v = state.venues[state.currentVenue];
+  const judgeEl = document.getElementById('judge');
+
+  if (!raceNo || !odds) {
+    judgeEl.textContent = 'レース番号とオッズを入力してください。';
+    return;
+  }
+
+  if (v.finished) {
+    judgeEl.textContent = 'この会場は本日終了状態です（勝ち逃げ or 損切り）。';
+    return;
+  }
+
+  if (odds < 2.7) {
+    judgeEl.textContent = `オッズ ${odds}倍 → 条件NG（見送り）`;
+    return;
+  }
+
+  judgeEl.innerHTML = `
+    ✅ 条件OK！<br>
+    レース: ${raceNo}R<br>
+    2番人気オッズ: ${odds}倍<br>
+    賭け金: ${KOKOMO_STEPS[v.stepIndex]} 円
+  `;
+});
