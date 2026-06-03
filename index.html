@@ -19,7 +19,7 @@
       max-width: 480px;
       margin: 0 auto;
       padding: 16px;
-      padding-bottom: 120px;
+      padding-bottom: 140px;
       box-sizing: border-box;
     }
 
@@ -170,6 +170,18 @@
     }
     .judge.ok { color: #34c759; }
     .judge.ng { color: #ff3b30; }
+
+    /* ===== 勝ち負けボタン ===== */
+    .win-btn {
+      background: #34c759;
+      color: #fff;
+      border-color: #34c759;
+    }
+    .lose-btn {
+      background: #ff3b30;
+      color: #fff;
+      border-color: #ff3b30;
+    }
   </style>
 </head>
 
@@ -214,9 +226,18 @@
 
     <!-- 賭け金 -->
     <div class="section">
-      <h2>賭け金候補</h2>
+      <h2>賭け金候補（ココモ本番）</h2>
       <div class="btn-row" id="betContainer"></div>
       <div class="judge" id="judgeText">判定待ち</div>
+    </div>
+
+    <!-- 勝ち負け -->
+    <div class="section">
+      <h2>結果入力</h2>
+      <div class="btn-row">
+        <button class="btn win-btn" id="winButton">勝ち</button>
+        <button class="btn lose-btn" id="loseButton">負け</button>
+      </div>
     </div>
 
   </div>
@@ -224,7 +245,7 @@
   <!-- 購入カード -->
   <div class="purchase-bar">
     <div class="purchase-inner">
-      <div class="purchase-amount" id="purchaseAmount">0円</div>
+      <div class="purchase-amount" id="purchaseAmount">100円</div>
       <button class="purchase-button" id="purchaseButton">IPATへ</button>
     </div>
   </div>
@@ -234,13 +255,15 @@
     const state = {
       course: "阪神",
       step: 1,
-      maxStep: 6,
       lossCount: 0,
       unit: 100,
       odds: null,
       selectedRace: null,
-      selectedBet: null
+      selectedBet: 100
     };
+
+    /* ===== ココモ本番シーケンス ===== */
+    const kokomo = [100, 100, 200, 300, 500, 800];
 
     /* ===== DOM ===== */
     const statusCourse = document.getElementById("statusCourse");
@@ -256,6 +279,9 @@
     const unitContainer = document.getElementById("unitContainer");
     const betContainer = document.getElementById("betContainer");
     const judgeText = document.getElementById("judgeText");
+
+    const winButton = document.getElementById("winButton");
+    const loseButton = document.getElementById("loseButton");
     const purchaseButton = document.getElementById("purchaseButton");
 
     /* ===== ユニット保存 ===== */
@@ -275,15 +301,14 @@
     /* ===== ステータス更新 ===== */
     function updateStatus() {
       statusCourse.textContent = state.course;
-      statusStep.textContent = `${state.step} / ${state.maxStep}`;
+      statusStep.textContent = `${state.step} / 6`;
       statusLoss.textContent = state.lossCount;
       statusUnit.textContent = `${state.unit}円`;
 
-      const nextBet = state.unit * state.step;
+      const nextBet = kokomo[state.step - 1];
       statusNextBet.textContent = `${nextBet}円`;
 
-      const amount = state.selectedBet || nextBet;
-      purchaseAmount.textContent = `${amount}円`;
+      purchaseAmount.textContent = `${state.selectedBet}円`;
     }
 
     /* ===== 会場 ===== */
@@ -382,7 +407,6 @@
           state.unit = u;
           saveUnit();
           updateUnitSelection();
-          updateBets();
           updateStatus();
         });
 
@@ -399,18 +423,15 @@
       });
     }
 
-    /* ===== 賭け金 ===== */
+    /* ===== 賭け金（ココモ固定） ===== */
     function initBets() {
       updateBets();
     }
 
     function updateBets() {
       betContainer.innerHTML = "";
-      const base = state.unit;
-      const steps = [1, 2, 3, 5, 8, 13];
 
-      steps.forEach((s, index) => {
-        const amount = base * s;
+      kokomo.forEach((amount, index) => {
         const btn = document.createElement("button");
         btn.className = "btn";
         btn.textContent = `${amount}円`;
@@ -453,6 +474,38 @@
         judgeText.className = "judge ng";
       }
     }
+
+    /* ===== 勝ち負け処理（本番ココモ） ===== */
+    function onWin() {
+      state.step = 1;
+      state.lossCount = 0;
+      state.selectedBet = kokomo[0];
+      updateStatus();
+      updateBetSelection();
+      alert("勝ち → ココモリセット");
+    }
+
+    function onLose() {
+      state.lossCount++;
+
+      if (state.lossCount >= 6) {
+        alert("6連敗 → ココモ停止（損失2,000円）");
+        state.step = 1;
+        state.lossCount = 0;
+        state.selectedBet = kokomo[0];
+        updateStatus();
+        updateBetSelection();
+        return;
+      }
+
+      state.step = state.lossCount + 1;
+      state.selectedBet = kokomo[state.step - 1];
+      updateStatus();
+      updateBetSelection();
+    }
+
+    winButton.addEventListener("click", onWin);
+    loseButton.addEventListener("click", onLose);
 
     /* ===== IPAT遷移 ===== */
     purchaseButton.addEventListener("click", () => {
