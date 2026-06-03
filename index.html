@@ -4,9 +4,16 @@
   <meta charset="UTF-8">
   <title>2ndフェイバリット・ココモ運用</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+    button { padding: 10px 20px; margin: 5px; font-size: 18px; }
+    section { margin-bottom: 25px; }
+    #buyBtn { background: #28a745; color: white; border: none; border-radius: 6px; }
+    .venue-btn { background: #007bff; color: white; border: none; border-radius: 6px; }
+  </style>
 </head>
 <body>
+
   <h1>2ndフェイバリット・ココモ運用パネル</h1>
 
   <!-- 会場選択 -->
@@ -44,6 +51,11 @@
     <div id="judge"></div>
   </section>
 
+  <!-- 購入ボタン -->
+  <section>
+    <button id="buyBtn" style="display:none;">購入へ</button>
+  </section>
+
   <!-- レース結果入力 -->
   <section>
     <h2>レース結果</h2>
@@ -54,6 +66,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-<section>
-  <button id="buyBtn" style="display:none;">購入へ</button>
-</section>
